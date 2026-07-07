@@ -73,6 +73,22 @@ export default function StoreShell({ view }: { view: StoreView }) {
   }, []);
 
   useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const response = await fetch("/api/auth/me");
+        const payload = await response.json();
+        if (payload.user) {
+          setCurrentUser(payload.user as User);
+        }
+      } catch {
+        // Ignore session restoration failures in demo mode.
+      }
+    };
+
+    void restoreSession();
+  }, []);
+
+  useEffect(() => {
     writeStorage(STORAGE_KEYS.users, users);
     writeStorage(STORAGE_KEYS.products, products);
     writeStorage(STORAGE_KEYS.cart, cart);
@@ -105,7 +121,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
   const revenue = orders.reduce((sum, order) => sum + order.total, 0);
   const adminView = currentUser?.role === "admin";
 
-  const handleAuth = (event: React.FormEvent) => {
+  const handleAuth = async (event: React.FormEvent) => {
     event.preventDefault();
     const email = authForm.email.trim().toLowerCase();
     const password = authForm.password;
@@ -115,41 +131,48 @@ export default function StoreShell({ view }: { view: StoreView }) {
       return;
     }
 
-    if (authMode === "signup") {
-      const exists = users.some((entry) => entry.email.toLowerCase() === email);
-      if (exists) {
-        setStatusMessage("That email already exists. Please log in instead.");
+    try {
+      const response = await fetch(`/api/auth/${authMode === "signup" ? "register" : "login"}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: authForm.name,
+          email,
+          password,
+          address: authForm.address,
+        }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        setStatusMessage(payload.error || "Authentication failed.");
         return;
       }
 
-      const newUser: User = {
-        id: createId("user"),
-        name: authForm.name || "New shopper",
-        email,
-        password,
-        role: "customer",
+      const nextUser: User = {
+        id: payload.user.id,
+        name: payload.user.name,
+        email: payload.user.email,
+        password: "",
+        role: payload.user.role || "customer",
         address: authForm.address || "",
       };
 
-      setUsers([newUser, ...users]);
-      setCurrentUser(newUser);
-      setStatusMessage("Account created. Welcome to Poppy.");
+      setCurrentUser(nextUser);
+      setUsers((existingUsers) => (existingUsers.some((entry) => entry.email.toLowerCase() === email) ? existingUsers : [nextUser, ...existingUsers]));
+      setStatusMessage(authMode === "signup" ? "Account created. Welcome to Poppy." : `Welcome back, ${nextUser.name}.`);
       setAuthForm({ name: "", email: "", password: "", address: "" });
-      return;
+    } catch {
+      setStatusMessage("Authentication failed. Please try again.");
     }
-
-    const foundUser = users.find((entry) => entry.email.toLowerCase() === email);
-    if (!foundUser || foundUser.password !== password) {
-      setStatusMessage("Invalid credentials. Try admin@poppy.com / admin123.");
-      return;
-    }
-
-    setCurrentUser(foundUser);
-    setStatusMessage(`Welcome back, ${foundUser.name}.`);
-    setAuthForm({ name: "", email: "", password: "", address: "" });
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // Ignore logout errors in demo mode.
+    }
     setCurrentUser(null);
     setStatusMessage("Signed out.");
   };
@@ -172,7 +195,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
     setCart(cart.map((item) => (item.productId === productId ? { ...item, quantity } : item)));
   };
 
-  const handleCheckout = (event: React.FormEvent) => {
+  const handleCheckout = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!currentUser) {
       setStatusMessage("Please sign in before checking out.");
@@ -182,24 +205,36 @@ export default function StoreShell({ view }: { view: StoreView }) {
       setStatusMessage("Your cart is empty.");
       return;
     }
-    const order: Order = {
-      id: createId("ord"),
-      userEmail: currentUser.email,
-      items: cart.map((item) => ({
-        productId: item.productId,
-        quantity: item.quantity,
-        price: products.find((product) => product.id === item.productId)?.price ?? 0,
-      })),
-      total: cartTotal,
-      status: "Processing",
-      trackingNumber: `PPY-${Math.floor(1000 + Math.random() * 9000)}`,
-      createdAt: new Date().toISOString(),
-      address: currentUser.address ?? "No address saved",
-      paymentStatus: "Paid",
-    };
-    setOrders([order, ...orders]);
-    setCart([]);
-    setStatusMessage("Order placed successfully. Payment is marked as paid.");
+
+    try {
+      const response = await fetch("/api/payments/create-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: cartTotal, email: currentUser.email, tx_ref: createId("tx") }),
+      });
+      const payload = await response.json();
+
+      const order: Order = {
+        id: createId("ord"),
+        userEmail: currentUser.email,
+        items: cart.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: products.find((product) => product.id === item.productId)?.price ?? 0,
+        })),
+        total: cartTotal,
+        status: "Processing",
+        trackingNumber: `PPY-${Math.floor(1000 + Math.random() * 9000)}`,
+        createdAt: new Date().toISOString(),
+        address: currentUser.address ?? "No address saved",
+        paymentStatus: "Paid",
+      };
+      setOrders([order, ...orders]);
+      setCart([]);
+      setStatusMessage(payload?.data?.link ? `Order placed. Payment link ready: ${payload.data.link}` : "Order placed successfully. Payment is marked as paid.");
+    } catch {
+      setStatusMessage("Checkout failed. Please try again.");
+    }
   };
 
   const handleProfileSubmit = (event: React.FormEvent) => {
