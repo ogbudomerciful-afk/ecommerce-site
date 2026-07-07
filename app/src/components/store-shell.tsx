@@ -205,17 +205,11 @@ export default function StoreShell({ view }: { view: StoreView }) {
       setStatusMessage("Your cart is empty.");
       return;
     }
-
     try {
-      const response = await fetch("/api/payments/create-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: cartTotal, email: currentUser.email, tx_ref: createId("tx") }),
-      });
-      const payload = await response.json();
-
-      const order: Order = {
-        id: createId("ord"),
+      // Create server-side order first
+      const txRef = createId("tx");
+      const orderPayload = {
+        tx_ref: txRef,
         userEmail: currentUser.email,
         items: cart.map((item) => ({
           productId: item.productId,
@@ -223,16 +217,62 @@ export default function StoreShell({ view }: { view: StoreView }) {
           price: products.find((product) => product.id === item.productId)?.price ?? 0,
         })),
         total: cartTotal,
+        address: currentUser.address ?? "",
+      };
+
+      const createResp = await fetch("/api/orders/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderPayload),
+      });
+      const createJson = await createResp.json();
+      if (!createResp.ok) {
+        setStatusMessage(createJson.error || "Failed to create order.");
+        return;
+      }
+
+      // Request payment link
+      const response = await fetch("/api/payments/create-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: cartTotal, email: currentUser.email, tx_ref: txRef }),
+      });
+      const payload = await response.json();
+
+      // Add local order view
+      const order: Order = {
+        id: createJson?.order?.id || createId("ord"),
+        userEmail: currentUser.email,
+        items: orderPayload.items,
+        total: cartTotal,
         status: "Processing",
         trackingNumber: `PPY-${Math.floor(1000 + Math.random() * 9000)}`,
         createdAt: new Date().toISOString(),
-        address: currentUser.address ?? "No address saved",
-        paymentStatus: "Paid",
+        address: orderPayload.address || "No address saved",
+        paymentStatus: payload?.data?.status || "Pending",
       };
       setOrders([order, ...orders]);
       setCart([]);
-      setStatusMessage(payload?.data?.link ? `Order placed. Payment link ready: ${payload.data.link}` : "Order placed successfully. Payment is marked as paid.");
-    } catch {
+
+      // Send confirmation email (best-effort)
+      try {
+        await fetch("/api/email/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to: currentUser.email,
+            subject: `Order confirmation — ${order.id}`,
+            html: `<p>Thanks for your order. Order id: <strong>${order.id}</strong></p><p>Total: ${formatCurrency(order.total)}</p>`,
+          }),
+        });
+      } catch {
+        // ignore email errors
+      }
+
+      setStatusMessage(payload?.data?.link ? `Order placed. Payment link ready: ${payload.data.link}` : "Order placed successfully. Awaiting payment confirmation.");
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Checkout error", err);
       setStatusMessage("Checkout failed. Please try again.");
     }
   };
@@ -251,8 +291,35 @@ export default function StoreShell({ view }: { view: StoreView }) {
     setStatusMessage("Profile updated.");
   };
 
-  const handleInventorySubmit = (event: React.FormEvent) => {
+  const handleInventorySubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    let imageUrl = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80";
+
+    // If a file input is present and Cloudinary is configured, upload it
+    const fileInput = (document.getElementById("product-image") as HTMLInputElement | null)?.files?.[0];
+    if (fileInput) {
+      try {
+        const sigResp = await fetch("/api/cloudinary/signature");
+        const sigJson = await sigResp.json();
+        if (sigJson?.demo) {
+          // demo mode — skip upload
+        } else if (sigJson?.uploadUrl) {
+          const form = new FormData();
+          form.append("file", fileInput);
+          form.append("api_key", sigJson.apiKey || "");
+          form.append("timestamp", String(sigJson.timestamp));
+          form.append("folder", sigJson.folder || "poppy_store");
+          form.append("signature", sigJson.signature || "");
+
+          const up = await fetch(sigJson.uploadUrl, { method: "POST", body: form });
+          const upJson = await up.json();
+          imageUrl = upJson?.secure_url || imageUrl;
+        }
+      } catch (e) {
+        // ignore upload errors and continue with default image
+      }
+    }
+
     const newProduct: Product = {
       id: createId("product"),
       name: inventoryForm.name,
@@ -260,12 +327,15 @@ export default function StoreShell({ view }: { view: StoreView }) {
       category: inventoryForm.category,
       inventory: Number(inventoryForm.inventory),
       description: inventoryForm.description,
-      image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80",
+      image: imageUrl,
       badge: "New",
     };
     setProducts([newProduct, ...products]);
     setStatusMessage("Product added to inventory.");
     setInventoryForm({ name: "", price: "", category: "Gadgets", inventory: "", description: "" });
+    // clear file input if present
+    const f = document.getElementById("product-image") as HTMLInputElement | null;
+    if (f) f.value = "";
   };
 
   const updateOrderStatus = (orderId: string, status: Order["status"]) => {
@@ -539,6 +609,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
                   <input required type="number" value={inventoryForm.price} onChange={(event) => setInventoryForm({ ...inventoryForm, price: event.target.value })} className="rounded-full border border-slate-300 px-4 py-3" placeholder="Price" />
                   <input required value={inventoryForm.category} onChange={(event) => setInventoryForm({ ...inventoryForm, category: event.target.value })} className="rounded-full border border-slate-300 px-4 py-3" placeholder="Category" />
                   <input required type="number" value={inventoryForm.inventory} onChange={(event) => setInventoryForm({ ...inventoryForm, inventory: event.target.value })} className="rounded-full border border-slate-300 px-4 py-3" placeholder="Stock" />
+                  <input id="product-image" type="file" accept="image/*" className="md:col-span-2 rounded-2xl border border-slate-300 px-4 py-3" />
                   <textarea required value={inventoryForm.description} onChange={(event) => setInventoryForm({ ...inventoryForm, description: event.target.value })} className="md:col-span-2 min-h-24 rounded-2xl border border-slate-300 px-4 py-3" placeholder="Description" />
                   <button type="submit" className="md:col-span-2 inline-flex items-center justify-center rounded-full bg-cyan-500 px-5 py-3 font-semibold text-black">
                     <PlusCircle className="mr-2" size={16} /> Add product
