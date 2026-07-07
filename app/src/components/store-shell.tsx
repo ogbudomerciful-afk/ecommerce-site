@@ -88,6 +88,36 @@ export default function StoreShell({ view }: { view: StoreView }) {
     void restoreSession();
   }, []);
 
+  // Fetch server-side orders when user or admin view changes
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        const url = currentUser?.role === "admin" ? "/api/orders/list" : `/api/orders/list?email=${encodeURIComponent(currentUser?.email || "")}`;
+        const resp = await fetch(url);
+        if (!resp.ok) return;
+        const json = await resp.json();
+        if (json?.orders) {
+          const normalized = json.orders.map((o: any) => ({
+            id: o._id || o.id || o.tx_ref,
+            userEmail: o.userEmail,
+            items: o.items,
+            total: o.total,
+            status: o.status,
+            trackingNumber: o.trackingNumber,
+            createdAt: o.createdAt,
+            address: o.address,
+            paymentStatus: o.paymentStatus,
+          } as Order));
+          setOrders(normalized);
+        }
+      } catch {
+        // ignore load errors
+      }
+    };
+
+    void loadOrders();
+  }, [currentUser]);
+
   useEffect(() => {
     writeStorage(STORAGE_KEYS.users, users);
     writeStorage(STORAGE_KEYS.products, products);
@@ -339,7 +369,19 @@ export default function StoreShell({ view }: { view: StoreView }) {
   };
 
   const updateOrderStatus = (orderId: string, status: Order["status"]) => {
+    // Optimistic UI update
     setOrders(orders.map((order) => (order.id === orderId ? { ...order, status } : order)));
+    (async () => {
+      try {
+        await fetch("/api/orders/update", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId, status }),
+        });
+      } catch (e) {
+        // ignore update errors
+      }
+    })();
   };
 
   const navItems = [
