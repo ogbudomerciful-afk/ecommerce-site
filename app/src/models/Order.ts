@@ -21,7 +21,16 @@ export type IOrder = {
 const OrderSchema = new mongoose.Schema<IOrder>({
   tx_ref: { type: String, required: true, unique: true },
   userEmail: { type: String, required: true },
-  items: { type: Array, required: true },
+  items: {
+  type: [
+    {
+      productId: { type: String, required: true },
+      quantity: { type: Number, required: true },
+      price: { type: Number, required: true },
+    },
+  ],
+  required: true,
+},
   total: { type: Number, required: true },
   status: { type: String, required: true, default: "Pending" },
   trackingNumber: String,

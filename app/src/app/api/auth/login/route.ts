@@ -1,4 +1,3 @@
-import { serialize } from "cookie";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -37,16 +36,15 @@ export async function POST(request: Request) {
       user: { id: user._id.toString(), email: user.email, name: user.name, role: user.role },
     });
 
-    response.headers.set(
-      "Set-Cookie",
-      serialize(AUTH_COOKIE_NAME, token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-      })
-    );
+   response.cookies.set({
+     name: AUTH_COOKIE_NAME,
+     value: token,
+     httpOnly: true,
+     secure: process.env.NODE_ENV === "production",
+     sameSite: "lax",
+     path: "/",
+     maxAge: 60 * 60 * 24 * 7,
+   });
 
     return response;
   } catch (error) {
