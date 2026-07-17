@@ -425,9 +425,11 @@ export default function StoreShell({ view }: { view: StoreView }) {
     setAuthForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const activeHref = view === "home" ? "/" : `/${view}`;
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.18),_transparent_30%),linear-gradient(135deg,_#f8fbff,_#ffffff)] text-slate-900">
-      <StoreHeader cartCount={cartCount} currentUser={currentUser} onLogout={handleLogout} navItems={navItems} />
+      <StoreHeader cartCount={cartCount} currentUser={currentUser} onLogout={handleLogout} navItems={navItems} activeHref={activeHref} />
 
       <main className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:flex-row lg:px-8">
         <section className="w-full lg:w-2/3">

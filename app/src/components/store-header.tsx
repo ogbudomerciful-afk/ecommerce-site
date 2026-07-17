@@ -17,9 +17,10 @@ type StoreHeaderProps = {
   currentUser: { name: string } | null;
   onLogout: () => void;
   navItems: NavItem[];
+  activeHref?: string;
 };
 
-export default function StoreHeader({ cartCount, currentUser, onLogout, navItems }: StoreHeaderProps) {
+export default function StoreHeader({ cartCount, currentUser, onLogout, navItems, activeHref }: StoreHeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -40,8 +41,18 @@ export default function StoreHeader({ cartCount, currentUser, onLogout, navItems
         <nav className={`${mobileOpen ? "flex" : "hidden"} absolute left-0 right-0 top-full flex-col gap-4 border-b border-teal-100 bg-black p-4 md:static md:flex md:flex-row md:gap-6 md:border-0 md:p-0`}>
           {navItems.map((item) => {
             const Icon = item.icon;
+            const isActive = item.href === activeHref;
             return (
-              <Link key={item.href} href={item.href} className="flex items-center gap-2 text-sm bg-gradient-to-r from-slate-300 to-white bg-clip-text text-transparent transition hover:from-white hover:to-slate-200" onClick={() => setMobileOpen(false)}>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-2 text-sm transition-all duration-200 ${
+                  isActive
+                    ? "bg-gradient-to-r from-teal-300 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]"
+                    : "bg-gradient-to-r from-slate-300 to-white bg-clip-text text-transparent hover:bg-gradient-to-r hover:from-teal-300 hover:to-cyan-300 hover:drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]"
+                }`}
+                onClick={() => setMobileOpen(false)}
+              >
                 <Icon size={16} strokeWidth={2.5} />
                 {item.label}
               </Link>
