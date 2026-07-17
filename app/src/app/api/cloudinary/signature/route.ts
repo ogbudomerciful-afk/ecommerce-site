@@ -12,7 +12,7 @@ if (CLOUD_NAME && API_KEY && API_SECRET) {
 export async function GET(req: Request) {
   // Return a signature + timestamp for client direct uploads.
   const timestamp = Math.floor(Date.now() / 1000);
-  const folder = "poppy_store";
+  const folder = "phantom_gadgets";
 
   if (!API_SECRET) {
     return NextResponse.json({ ok: true, demo: true, uploadUrl: `https://res.cloudinary.com/${CLOUD_NAME || "demo"}/image/upload`, timestamp, signature: "" });

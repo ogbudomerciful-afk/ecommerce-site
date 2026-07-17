@@ -86,14 +86,14 @@ export const starterProducts: Product[] = [
 export const starterOrders: Order[] = [
   {
     id: "ord-1001",
-    userEmail: "customer@poppy.com",
+    userEmail: "customer@phantom.com",
     items: [
       { productId: "p1", quantity: 1, price: 98000 },
       { productId: "p3", quantity: 1, price: 68000 },
     ],
     total: 166000,
     status: "Shipped",
-    trackingNumber: "PPY-1024",
+    trackingNumber: "PHG-1024",
     createdAt: "2026-07-01T10:00:00.000Z",
     address: "10 Broad Street, Lagos",
     paymentStatus: "Paid",
@@ -104,7 +104,7 @@ export const starterUsers: User[] = [
   {
     id: "admin-1",
     name: "Aisha Admin",
-    email: "admin@poppy.com",
+    email: "admin@phantom.com",
     password: "admin123",
     role: "admin",
     address: "8 Market Road, Abuja",
@@ -113,7 +113,7 @@ export const starterUsers: User[] = [
   {
     id: "cust-1",
     name: "Tobi Customer",
-    email: "customer@poppy.com",
+    email: "customer@phantom.com",
     password: "customer123",
     role: "customer",
     address: "20 Allen Avenue, Lagos",

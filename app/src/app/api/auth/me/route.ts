@@ -6,7 +6,7 @@ import User from "@/models/User";
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || "dev-secret";
 
 export async function GET(request: NextRequest) {
-  const token = request.cookies.get("poppy_token")?.value;
+  const token = request.cookies.get("phantom_token")?.value;
   if (!token) {
     return NextResponse.json({ user: null });
   }

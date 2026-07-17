@@ -6,7 +6,7 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as { to?: string; subject?: string; html?: string };
   const to = body.to;
-  const subject = body.subject || "Notification from Poppy Store";
+  const subject = body.subject || "Notification from Phantom Gadgets";
   const html = body.html || "";
 
   if (!to) return NextResponse.json({ error: "Missing recipient" }, { status: 400 });
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     const resp = await axios.post(
       "https://api.resend.com/emails",
       {
-        from: "no-reply@poppy.store",
+        from: "no-reply@phantomgadgets.store",
         to: [to],
         subject,
         html,

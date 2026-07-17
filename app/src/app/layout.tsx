@@ -9,7 +9,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Poppy Store",
+  title: "Phantom Gadgets",
   description: "An ecommerce MVP with authentication, cart, orders, and admin tools.",
 };
 

@@ -1,4 +1,4 @@
-# Poppy Store — Ecommerce MVP
+# Phantom Gadgets — Ecommerce MVP
 
 This workspace contains a Next.js + TypeScript ecommerce MVP scaffold with:
 

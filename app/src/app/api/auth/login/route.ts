@@ -5,7 +5,7 @@ import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || "dev-secret";
-const AUTH_COOKIE_NAME = "poppy_token";
+const AUTH_COOKIE_NAME = "phantom_token";
 
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as { email?: string; password?: string };

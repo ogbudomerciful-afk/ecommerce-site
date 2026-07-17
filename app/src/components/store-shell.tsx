@@ -30,11 +30,11 @@ import {
 type StoreView = "home" | "catalog" | "cart" | "checkout" | "orders" | "admin" | "profile";
 
 const STORAGE_KEYS = {
-  users: "poppy-users",
-  currentUser: "poppy-current-user",
-  cart: "poppy-cart",
-  orders: "poppy-orders",
-  products: "poppy-products",
+  users: "phantom-users",
+  currentUser: "phantom-current-user",
+  cart: "phantom-cart",
+  orders: "phantom-orders",
+  products: "phantom-products",
 };
 
 function readStorage<T>(key: string, fallback: T): T {
@@ -190,7 +190,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
 
       setCurrentUser(nextUser);
       setUsers((existingUsers) => (existingUsers.some((entry) => entry.email.toLowerCase() === email) ? existingUsers : [nextUser, ...existingUsers]));
-      setStatusMessage(authMode === "signup" ? "Account created. Welcome to Poppy." : `Welcome back, ${nextUser.name}.`);
+      setStatusMessage(authMode === "signup" ? "Account created. Welcome to Phantom Gadgets." : `Welcome back, ${nextUser.name}.`);
       setAuthForm({ name: "", email: "", password: "", address: "" });
     } catch {
       setStatusMessage("Authentication failed. Please try again.");
@@ -276,7 +276,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
         items: orderPayload.items,
         total: cartTotal,
         status: "Processing",
-        trackingNumber: `PPY-${Math.floor(1000 + Math.random() * 9000)}`,
+        trackingNumber: `PHG-${Math.floor(1000 + Math.random() * 9000)}`,
         createdAt: new Date().toISOString(),
         address: orderPayload.address || "No address saved",
         paymentStatus: payload?.data?.status || "Pending",
@@ -338,7 +338,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
           form.append("file", fileInput);
           form.append("api_key", sigJson.apiKey || "");
           form.append("timestamp", String(sigJson.timestamp));
-          form.append("folder", sigJson.folder || "poppy_store");
+          form.append("folder", sigJson.folder || "phantom_gadgets");
           form.append("signature", sigJson.signature || "");
 
           const up = await fetch(sigJson.uploadUrl, { method: "POST", body: form });
@@ -395,22 +395,22 @@ export default function StoreShell({ view }: { view: StoreView }) {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.18),_transparent_30%),linear-gradient(135deg,_#f8fbff,_#ffffff)] text-slate-900">
-      <header className="border-b border-cyan-100 bg-black text-white">
+      <header className="border-b border-teal-100 bg-black text-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cyan-400 text-lg font-semibold text-black">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-teal-400 text-lg font-semibold text-black">
               P
             </div>
             <div>
-              <p className="text-xl font-semibold">Poppy Store</p>
-              <p className="text-sm text-cyan-200">Fast checkout, smart ops</p>
+              <p className="text-xl font-semibold">Phantom Gadgets</p>
+              <p className="text-sm text-teal-200">Fast checkout, smart ops</p>
             </div>
           </Link>
           <div className="hidden items-center gap-6 md:flex">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
-                <Link key={item.href} href={item.href} className="flex items-center gap-2 text-sm text-slate-200 transition hover:text-cyan-300">
+                 <Link key={item.href} href={item.href} className="flex items-center gap-2 text-sm text-slate-200 transition hover:text-teal-300">
                   <Icon size={16} />
                   {item.label}
                 </Link>
@@ -418,7 +418,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
             })}
           </div>
           <div className="flex items-center gap-3">
-            <div className="rounded-full border border-cyan-400/40 bg-cyan-500/10 px-3 py-1 text-sm text-cyan-100">
+            <div className="rounded-full border border-teal-400/40 bg-teal-500/10 px-3 py-1 text-sm text-teal-100">
               Cart {cartCount}
             </div>
             {currentUser ? (
@@ -426,7 +426,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
                 Logout
               </button>
             ) : (
-              <Link href="/profile" className="rounded-full bg-cyan-400 px-4 py-2 text-sm font-semibold text-black">
+              <Link href="/profile" className="rounded-full bg-teal-400 px-4 py-2 text-sm font-semibold text-black">
                 Sign in
               </Link>
             )}
@@ -437,15 +437,15 @@ export default function StoreShell({ view }: { view: StoreView }) {
       <main className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:flex-row lg:px-8">
         <section className="w-full lg:w-2/3">
           {statusMessage ? (
-            <div className="mb-6 rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-cyan-900">
+            <div className="mb-6 rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900">
               {statusMessage}
             </div>
           ) : null}
 
           {view === "home" ? (
             <>
-              <div className="rounded-3xl border border-slate-200 bg-black p-8 text-white shadow-2xl shadow-cyan-100/60">
-                <div className="flex items-center gap-2 text-sm uppercase tracking-[0.3em] text-cyan-300">
+                <div className="rounded-3xl border border-slate-200 bg-black p-8 text-white shadow-2xl shadow-teal-100/60">
+                  <div className="flex items-center gap-2 text-sm uppercase tracking-[0.3em] text-teal-300">
                   <Sparkles size={16} />
                   MVP launch ready
                 </div>
@@ -453,10 +453,10 @@ export default function StoreShell({ view }: { view: StoreView }) {
                   A polished ecommerce MVP with cart, payments, admin tools, and delivery tracking.
                 </h1>
                 <p className="mt-4 max-w-2xl text-lg text-slate-300">
-                  Poppy Store combines stylish storefront design with practical operations for launches and small teams.
+                  Phantom Gadgets combines stylish storefront design with practical operations for launches and small teams.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <Link href="/catalog" className="rounded-full bg-cyan-400 px-5 py-3 font-semibold text-black">
+                  <Link href="/catalog" className="rounded-full bg-teal-400 px-5 py-3 font-semibold text-black">
                     Browse products
                   </Link>
                   <Link href="/admin" className="rounded-full border border-white/20 px-5 py-3 font-semibold text-white">
@@ -483,20 +483,20 @@ export default function StoreShell({ view }: { view: StoreView }) {
               <div className="mt-8">
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-semibold">Featured products</h2>
-                  <Link href="/catalog" className="text-sm font-semibold text-purple-700">See all</Link>
+                  <Link href="/catalog" className="text-sm font-semibold text-blue-700">See all</Link>
                 </div>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   {featuredProducts.map((product) => (
                     <div key={product.id} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                       <div className="flex items-center justify-between">
-                        <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-purple-700">{product.category}</span>
-                        {product.badge ? <span className="text-sm text-cyan-600">{product.badge}</span> : null}
+                        <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">{product.category}</span>
+                        {product.badge ? <span className="text-sm text-teal-600">{product.badge}</span> : null}
                       </div>
                       <h3 className="mt-4 text-xl font-semibold">{product.name}</h3>
                       <p className="mt-2 text-sm text-slate-600">{product.description}</p>
                       <div className="mt-5 flex items-center justify-between">
                         <p className="text-lg font-semibold">{formatCurrency(product.price)}</p>
-                        <button onClick={() => addToCart(product.id)} className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white">
+                        <button onClick={() => addToCart(product.id)} className="rounded-full bg-teal-600 px-4 py-2 text-sm font-semibold text-white">
                           Add to cart
                         </button>
                       </div>
@@ -512,14 +512,14 @@ export default function StoreShell({ view }: { view: StoreView }) {
               {products.map((product) => (
                 <div key={product.id} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                   <div className="flex items-center justify-between">
-                    <span className="rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700">{product.category}</span>
+                    <span className="rounded-full bg-teal-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">{product.category}</span>
                     <span className="text-sm text-slate-500">{product.inventory} in stock</span>
                   </div>
                   <h2 className="mt-4 text-xl font-semibold">{product.name}</h2>
                   <p className="mt-2 text-sm text-slate-600">{product.description}</p>
                   <div className="mt-5 flex items-center justify-between">
                     <p className="text-lg font-semibold">{formatCurrency(product.price)}</p>
-                    <button onClick={() => addToCart(product.id)} className="rounded-full bg-purple-600 px-4 py-2 text-sm font-semibold text-white">
+                    <button onClick={() => addToCart(product.id)} className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white">
                       Add to cart
                     </button>
                   </div>
@@ -560,7 +560,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
                       <span>Total</span>
                       <span>{formatCurrency(cartTotal)}</span>
                     </div>
-                    <Link href="/checkout" className="mt-4 inline-flex items-center rounded-full bg-cyan-500 px-5 py-3 font-semibold text-black">
+                     <Link href="/checkout" className="mt-4 inline-flex items-center rounded-full bg-teal-500 px-5 py-3 font-semibold text-black">
                       Proceed to checkout <ArrowRight className="ml-2" size={16} />
                     </Link>
                   </div>
@@ -584,7 +584,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
                   <p className="font-semibold">Delivery address</p>
                   <p className="mt-2 text-sm text-slate-600">{currentUser?.address ?? "Add a profile address before checkout."}</p>
                 </div>
-                <button type="submit" className="rounded-full bg-purple-600 px-5 py-3 font-semibold text-white">
+                <button type="submit" className="rounded-full bg-blue-600 px-5 py-3 font-semibold text-white">
                   Confirm order
                 </button>
               </form>
@@ -601,10 +601,10 @@ export default function StoreShell({ view }: { view: StoreView }) {
                         <p className="text-lg font-semibold">{order.id}</p>
                         <p className="text-sm text-slate-500">{new Date(order.createdAt).toLocaleDateString()}</p>
                       </div>
-                      <div className="rounded-full bg-cyan-100 px-3 py-1 text-sm font-semibold text-cyan-700">{order.status}</div>
+                      <div className="rounded-full bg-teal-100 px-3 py-1 text-sm font-semibold text-teal-700">{order.status}</div>
                     </div>
                     <div className="mt-4 flex items-center gap-2 text-sm text-slate-600">
-                      <Truck size={16} className="text-purple-600" />
+                      <Truck size={16} className="text-blue-600" />
                       Tracking: {order.trackingNumber}
                     </div>
                     <div className="mt-3 text-sm text-slate-600">Items: {order.items.length} • Total: {formatCurrency(order.total)}</div>
@@ -622,21 +622,21 @@ export default function StoreShell({ view }: { view: StoreView }) {
             <div className="space-y-6">
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="flex items-center gap-2 text-cyan-600">
+                  <div className="flex items-center gap-2 text-teal-600">
                     <ChartColumnIncreasing size={18} />
                     <p className="text-sm font-semibold">Sales</p>
                   </div>
                   <p className="mt-3 text-2xl font-semibold">{formatCurrency(revenue)}</p>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="flex items-center gap-2 text-purple-600">
+                  <div className="flex items-center gap-2 text-blue-600">
                     <PackageCheck size={18} />
                     <p className="text-sm font-semibold">Open orders</p>
                   </div>
                   <p className="mt-3 text-2xl font-semibold">{orders.filter((order) => order.status !== "Delivered").length}</p>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="flex items-center gap-2 text-black">
+                  <div className="flex items-center gap-2 text-teal-600">
                     <Settings size={18} />
                     <p className="text-sm font-semibold">Inventory alerts</p>
                   </div>
@@ -653,7 +653,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
                   <input required type="number" value={inventoryForm.inventory} onChange={(event) => setInventoryForm({ ...inventoryForm, inventory: event.target.value })} className="rounded-full border border-slate-300 px-4 py-3" placeholder="Stock" />
                   <input id="product-image" type="file" accept="image/*" className="md:col-span-2 rounded-2xl border border-slate-300 px-4 py-3" />
                   <textarea required value={inventoryForm.description} onChange={(event) => setInventoryForm({ ...inventoryForm, description: event.target.value })} className="md:col-span-2 min-h-24 rounded-2xl border border-slate-300 px-4 py-3" placeholder="Description" />
-                  <button type="submit" className="md:col-span-2 inline-flex items-center justify-center rounded-full bg-cyan-500 px-5 py-3 font-semibold text-black">
+                  <button type="submit" className="md:col-span-2 inline-flex items-center justify-center rounded-full bg-teal-500 px-5 py-3 font-semibold text-black">
                     <PlusCircle className="mr-2" size={16} /> Add product
                   </button>
                 </form>
@@ -694,7 +694,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
                   <input value={profileForm.phone} onChange={(event) => setProfileForm({ ...profileForm, phone: event.target.value })} className="w-full rounded-full border border-slate-300 px-4 py-3" placeholder="Phone" />
                   <textarea value={profileForm.address} onChange={(event) => setProfileForm({ ...profileForm, address: event.target.value })} className="min-h-24 w-full rounded-2xl border border-slate-300 px-4 py-3" placeholder="Address" />
                   <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-                    Want to demo the admin workspace? Use admin@poppy.com with password admin123.
+                     Want to demo the admin workspace? Use admin@phantom.com with password admin123.
                   </div>
                   <button type="submit" className="rounded-full bg-black px-5 py-3 font-semibold text-white">
                     Save profile
@@ -707,10 +707,10 @@ export default function StoreShell({ view }: { view: StoreView }) {
                   </div>
                   <form onSubmit={handleAuth} className="space-y-3 rounded-2xl border border-slate-200 p-4">
                     <div className="flex gap-3">
-                      <button type="button" onClick={() => setAuthMode("login")} className={`rounded-full px-4 py-2 text-sm font-semibold ${authMode === "login" ? "bg-cyan-500 text-black" : "bg-slate-100 text-slate-700"}`}>
+                        <button type="button" onClick={() => setAuthMode("login")} className={`rounded-full px-4 py-2 text-sm font-semibold ${authMode === "login" ? "bg-teal-500 text-black" : "bg-slate-100 text-slate-700"}`}>
                         Login
                       </button>
-                      <button type="button" onClick={() => setAuthMode("signup")} className={`rounded-full px-4 py-2 text-sm font-semibold ${authMode === "signup" ? "bg-cyan-500 text-black" : "bg-slate-100 text-slate-700"}`}>
+                        <button type="button" onClick={() => setAuthMode("signup")} className={`rounded-full px-4 py-2 text-sm font-semibold ${authMode === "signup" ? "bg-teal-500 text-black" : "bg-slate-100 text-slate-700"}`}>
                         Sign up
                       </button>
                     </div>
@@ -718,7 +718,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
                     <input type="email" value={authForm.email} onChange={(event) => setAuthForm({ ...authForm, email: event.target.value })} className="w-full rounded-full border border-slate-300 px-4 py-3" placeholder="Email address" />
                     <input type="password" value={authForm.password} onChange={(event) => setAuthForm({ ...authForm, password: event.target.value })} className="w-full rounded-full border border-slate-300 px-4 py-3" placeholder="Password" />
                     {authMode === "signup" ? <input value={authForm.address} onChange={(event) => setAuthForm({ ...authForm, address: event.target.value })} className="w-full rounded-full border border-slate-300 px-4 py-3" placeholder="Address" /> : null}
-                    <button type="submit" className="w-full rounded-full bg-purple-600 px-5 py-3 font-semibold text-white">
+                    <button type="submit" className="w-full rounded-full bg-blue-600 px-5 py-3 font-semibold text-white">
                       {authMode === "login" ? "Login" : "Create account"}
                     </button>
                   </form>
@@ -730,7 +730,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
 
         <aside className="w-full space-y-4 lg:w-1/3">
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-2 text-cyan-700">
+            <div className="flex items-center gap-2 text-teal-700">
               <ShieldCheck size={18} />
               <h3 className="font-semibold">Security and operations</h3>
             </div>
@@ -743,7 +743,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
           </div>
 
           <div className="rounded-3xl border border-slate-200 bg-black p-5 text-white shadow-sm">
-            <p className="text-sm uppercase tracking-[0.2em] text-cyan-300">Quick actions</p>
+            <p className="text-sm uppercase tracking-[0.2em] text-teal-300">Quick actions</p>
             <div className="mt-4 space-y-3">
               <Link href="/catalog" className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/10 px-4 py-3">
                 <span>Explore catalog</span>
@@ -754,7 +754,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
                 <ArrowRight size={16} />
               </Link>
               {adminView ? (
-                <Link href="/admin" className="flex items-center justify-between rounded-2xl border border-cyan-400/40 bg-cyan-500/10 px-4 py-3">
+                <Link href="/admin" className="flex items-center justify-between rounded-2xl border border-teal-400/40 bg-teal-500/10 px-4 py-3">
                   <span>Open admin dashboard</span>
                   <ArrowRight size={16} />
                 </Link>

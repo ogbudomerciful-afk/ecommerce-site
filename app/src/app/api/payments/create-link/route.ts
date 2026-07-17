@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const amount = Number(body.amount ?? 0);
   const currency = body.currency || "NGN";
   const email = body.email?.trim().toLowerCase();
-  const txRef = body.tx_ref || `poppy_${Date.now()}`;
+  const txRef = body.tx_ref || `phantom_${Date.now()}`;
 
   if (!amount || !email) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
