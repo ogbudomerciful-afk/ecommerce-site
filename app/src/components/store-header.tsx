@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -25,8 +26,8 @@ export default function StoreHeader({ cartCount, currentUser, onLogout, navItems
     <header className="border-b border-teal-100 bg-black text-white">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-teal-400 text-lg font-semibold text-black">
-            P
+          <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-teal-400">
+            <Image src="/logo.png" alt="Phantom Gadgets" width={44} height={44} className="h-full w-full object-cover" priority />
           </div>
           <div>
             <p className="text-xl font-semibold">Phantom Gadgets</p>

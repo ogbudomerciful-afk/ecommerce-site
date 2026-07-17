@@ -5,7 +5,7 @@ const JWT_SECRET = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET;
 function getJwtSecret(): string {
   if (JWT_SECRET) return JWT_SECRET;
   if (process.env.NODE_ENV === "production") {
-    throw new Error("JWT_SECRET must be set in production");
+    throw new Error("JWT_SECRET must be set in production. Configure it in your deployment environment variables.");
   }
   return "dev-secret";
 }
