@@ -733,6 +733,11 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
                 <button type="submit" className="rounded-full bg-blue-600 px-5 py-3 font-semibold text-white">
                   Confirm order
                 </button>
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500">
+                  <span className="flex items-center gap-1"><ShieldCheck size={14} className="text-teal-600" /> SSL Secure</span>
+                  <span className="flex items-center gap-1"><Truck size={14} className="text-teal-600" /> Fast Delivery</span>
+                  <span className="flex items-center gap-1"><PackageCheck size={14} className="text-teal-600" /> 7-Day Returns</span>
+                </div>
               </form>
             </div>
           ) : null}
