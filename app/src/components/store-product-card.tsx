@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { useState } from "react";
 import type { Product } from "@/lib/mock-data";
 
 type StoreProductCardProps = {
@@ -9,10 +9,28 @@ type StoreProductCardProps = {
 };
 
 export default function StoreProductCard({ product, onAddToCart }: StoreProductCardProps) {
+  const [imgSrc, setImgSrc] = useState(product.image);
+  const [imgError, setImgError] = useState(false);
+
+  const fallbackImage = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80";
+
   return (
     <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
       <div className="relative h-56 w-full bg-slate-100">
-        <Image src={product.image} alt={product.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+        {!imgError ? (
+          <img
+            src={imgSrc}
+            alt={product.name}
+            loading="lazy"
+            className="h-full w-full object-cover"
+            onError={() => {
+              setImgSrc(fallbackImage);
+              setImgError(true);
+            }}
+          />
+        ) : (
+          <img src={fallbackImage} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
+        )}
       </div>
       <div className="p-5">
         <div className="flex items-center justify-between">
