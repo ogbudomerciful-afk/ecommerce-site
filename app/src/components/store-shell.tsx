@@ -26,6 +26,7 @@ import StoreProfileForm from "@/components/store-profile-form";
 import StoreSidebar from "@/components/store-sidebar";
 import Skeleton from "@/components/store-skeleton";
 import StoreProductPage from "@/components/store-product-page";
+import StoreCustomerDashboard from "@/components/store-customer-dashboard";
 
 type StoreView = "home" | "catalog" | "cart" | "checkout" | "orders" | "admin" | "profile" | "product";
 type AuthMode = "login" | "signup" | "forgot-password" | "reset-password";
@@ -652,14 +653,13 @@ export default function StoreShell({ view, productId }: { view: StoreView; produ
 
           {view === "profile" ? (
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Profile settings</h2>
+              <h2 className="text-2xl font-semibold">My Account</h2>
               {currentUser ? (
-                <StoreProfileForm
+                <StoreCustomerDashboard
                   currentUser={currentUser}
-                  form={profileForm}
-                  onFormChange={(field, value) => setProfileForm((prev) => ({ ...prev, [field]: value }))}
-                  onSubmit={handleProfileSubmit}
-                  statusMessage={statusMessage}
+                  products={products}
+                  orders={orders}
+                  onAddToCart={addToCart}
                 />
               ) : (
                 <StoreAuth

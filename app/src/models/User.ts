@@ -11,6 +11,17 @@ export type IUser = {
   verificationToken?: string;
   resetToken?: string;
   resetTokenExpiry?: Date;
+  addresses?: Array<{
+    id: string;
+    label: string;
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+    isDefault: boolean;
+  }>;
+  wishlist?: string[];
 };
 
 const UserSchema = new mongoose.Schema<IUser>({
@@ -24,6 +35,8 @@ const UserSchema = new mongoose.Schema<IUser>({
   verificationToken: String,
   resetToken: String,
   resetTokenExpiry: Date,
+  addresses: [{ type: mongoose.Schema.Types.Mixed }],
+  wishlist: [{ type: String }],
 });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);
