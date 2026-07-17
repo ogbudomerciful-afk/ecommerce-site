@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, LayoutGrid, PackageCheck, ShieldCheck, ShoppingBag, Sparkles, Truck, UserRound } from "lucide-react";
+import { ArrowRight, LayoutGrid, PackageCheck, ShieldCheck, ShoppingBag, Sparkles, Truck, UserRound, Search } from "lucide-react";
 import Link from "next/link";
 import {
   createId,
@@ -25,8 +25,9 @@ import StoreOrderManager from "@/components/store-order-manager";
 import StoreProfileForm from "@/components/store-profile-form";
 import StoreSidebar from "@/components/store-sidebar";
 import Skeleton from "@/components/store-skeleton";
+import StoreProductPage from "@/components/store-product-page";
 
-type StoreView = "home" | "catalog" | "cart" | "checkout" | "orders" | "admin" | "profile";
+type StoreView = "home" | "catalog" | "cart" | "checkout" | "orders" | "admin" | "profile" | "product";
 type AuthMode = "login" | "signup" | "forgot-password" | "reset-password";
 
 const STORAGE_KEYS = {
@@ -52,7 +53,7 @@ function writeStorage<T>(key: string, value: T) {
   window.localStorage.setItem(key, JSON.stringify(value));
 }
 
-export default function StoreShell({ view }: { view: StoreView }) {
+export default function StoreShell({ view, productId }: { view: StoreView; productId?: string }) {
   const [users, setUsers] = useState<User[]>(starterUsers);
   const [products, setProducts] = useState<Product[]>(starterProducts);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -64,6 +65,9 @@ export default function StoreShell({ view }: { view: StoreView }) {
   const [profileForm, setProfileForm] = useState({ name: "", address: "", phone: "" });
   const [inventoryForm, setInventoryForm] = useState({ name: "", price: "", category: "Gadgets", inventory: "", description: "" });
   const [statusMessage, setStatusMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | "name">("price-asc");
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -492,20 +496,86 @@ export default function StoreShell({ view }: { view: StoreView }) {
           ) : null}
 
           {view === "catalog" ? (
-            loading ? (
-              <div className="grid gap-4 md:grid-cols-2">
-                <Skeleton className="h-64" />
-                <Skeleton className="h-64" />
-                <Skeleton className="h-64" />
-                <Skeleton className="h-64" />
+            <div className="space-y-6">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <h1 className="text-3xl font-semibold">Catalog</h1>
+                <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                  <div className="relative">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search products..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full rounded-full border border-slate-300 pl-9 pr-4 py-2 text-sm focus:border-teal-500 focus:outline-none md:w-64"
+                    />
+                  </div>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="rounded-full border border-slate-300 px-4 py-2 text-sm focus:border-teal-500 focus:outline-none"
+                  >
+                    <option value="All">All Categories</option>
+                    {Array.from(new Set(products.map((p) => p.category))).sort().map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as "price-asc" | "price-desc" | "name")}
+                    className="rounded-full border border-slate-300 px-4 py-2 text-sm focus:border-teal-500 focus:outline-none"
+                  >
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="name">Name</option>
+                  </select>
+                </div>
               </div>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2">
-                {products.map((product) => (
-                  <StoreProductCard key={product.id} product={product} onAddToCart={addToCart} />
-                ))}
-              </div>
-            )
+              {loading ? (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Skeleton className="h-64" />
+                  <Skeleton className="h-64" />
+                  <Skeleton className="h-64" />
+                  <Skeleton className="h-64" />
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {products.map((product) => (
+                    <StoreProductCard key={product.id} product={product} onAddToCart={addToCart} />
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : null}
+
+          {view === "product" && productId ? (
+            (() => {
+              const product = products.find((p) => p.id === productId);
+              if (!product) {
+                return (
+                  <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <h2 className="text-2xl font-semibold">Product not found</h2>
+                    <p className="mt-2 text-slate-600">The product you are looking for does not exist.</p>
+                  </div>
+                );
+              }
+              return (
+                <StoreProductPage
+                  product={product}
+                  relatedProducts={products.filter((p) => p.category === product.category && p.id !== product.id)}
+                  onAddToCart={addToCart}
+                  allProducts={products}
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                  selectedCategory={selectedCategory}
+                  onCategoryChange={setSelectedCategory}
+                  sortBy={sortBy}
+                  onSortChange={setSortBy}
+                />
+              );
+            })()
           ) : null}
 
           {view === "cart" ? (
