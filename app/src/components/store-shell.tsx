@@ -27,6 +27,9 @@ import StoreSidebar from "@/components/store-sidebar";
 import Skeleton from "@/components/store-skeleton";
 import StoreProductPage from "@/components/store-product-page";
 import StoreCustomerDashboard from "@/components/store-customer-dashboard";
+import StoreAdminProducts from "@/components/store-admin-products";
+import StoreAdminCustomers from "@/components/store-admin-customers";
+import StoreAdminAnalytics from "@/components/store-admin-analytics";
 
 type StoreView = "home" | "catalog" | "cart" | "checkout" | "orders" | "admin" | "profile" | "product";
 type AuthMode = "login" | "signup" | "forgot-password" | "reset-password";
@@ -69,6 +72,7 @@ export default function StoreShell({ view, productId }: { view: StoreView; produ
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | "name">("price-asc");
+  const [adminTab, setAdminTab] = useState<"overview" | "products" | "orders" | "customers">("overview");
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -731,9 +735,56 @@ export default function StoreShell({ view, productId }: { view: StoreView; produ
 
           {view === "admin" ? (
             <div className="space-y-6">
-              <StoreAdminStats revenue={revenue} openOrders={orders.filter((order) => order.status !== "Delivered").length} lowStock={lowStockProducts.length} />
-              <StoreInventoryForm form={inventoryForm} onFormChange={(field, value) => setInventoryForm((prev) => ({ ...prev, [field]: value }))} onSubmit={handleInventorySubmit} fileRef={fileRef} />
-              <StoreOrderManager orders={orders} onUpdateStatus={updateOrderStatus} />
+              <div className="flex flex-col gap-2 md:flex-row md:gap-4">
+                {[
+                  { id: "overview", label: "Overview" },
+                  { id: "products", label: "Products" },
+                  { id: "orders", label: "Orders" },
+                  { id: "customers", label: "Customers" },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setAdminTab(tab.id as any)}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                      adminTab === tab.id ? "bg-teal-500 text-black" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {adminTab === "overview" && (
+                <StoreAdminAnalytics orders={orders} products={products} customers={users} revenue={revenue} />
+              )}
+
+              {adminTab === "products" && (
+                <StoreAdminProducts
+                  products={products}
+                  onAddProduct={(productData) => {
+                    const newProduct = { ...productData, id: createId("product") };
+                    setProducts([newProduct, ...products]);
+                    setStatusMessage("Product added successfully");
+                  }}
+                  onUpdateProduct={(updatedProduct) => {
+                    setProducts(products.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)));
+                    setStatusMessage("Product updated successfully");
+                  }}
+                  onDeleteProduct={(productId) => {
+                    setProducts(products.filter((p) => p.id !== productId));
+                    setStatusMessage("Product deleted successfully");
+                  }}
+                />
+              )}
+
+              {adminTab === "orders" && (
+                <div className="space-y-6">
+                  <StoreAdminStats revenue={revenue} openOrders={orders.filter((order) => order.status !== "Delivered").length} lowStock={lowStockProducts.length} />
+                  <StoreOrderManager orders={orders} onUpdateStatus={updateOrderStatus} />
+                </div>
+              )}
+
+              {adminTab === "customers" && <StoreAdminCustomers customers={users} />}
             </div>
           ) : null}
 
