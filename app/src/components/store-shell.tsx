@@ -158,6 +158,19 @@ export default function StoreShell({ view, productId }: { view: StoreView; produ
   const revenue = orders.reduce((sum, order) => sum + order.total, 0);
   const adminView = currentUser?.role === "admin";
 
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(products.map((p) => p.category)));
+    return cats.sort();
+  }, [products]);
+
+  const bestSellers = useMemo(() => {
+    return [...products].sort((a, b) => b.inventory - a.inventory).slice(0, 4);
+  }, [products]);
+
+  const newArrivals = useMemo(() => {
+    return [...products].sort(() => Math.random() - 0.5).slice(0, 4);
+  }, [products]);
+
   const handleAuth = async (event: React.FormEvent) => {
     event.preventDefault();
     if (authMode === "forgot-password") {
@@ -483,8 +496,81 @@ export default function StoreShell({ view, productId }: { view: StoreView; produ
               </div>
 
               <div className="mt-8">
+                <h2 className="text-2xl font-semibold">Shop by Category</h2>
+                <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+                  {categories.map((category) => (
+                    <Link
+                      key={category}
+                      href={`/catalog?category=${encodeURIComponent(category)}`}
+                      className="rounded-2xl border border-slate-200 bg-white p-4 text-center shadow-sm transition hover:border-teal-300 hover:shadow-md"
+                    >
+                      <p className="text-sm font-semibold text-slate-900">{category}</p>
+                      <p className="mt-1 text-xs text-slate-500">{products.filter((p) => p.category === category).length} products</p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-8">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-semibold">Featured products</h2>
+                  <h2 className="text-2xl font-semibold">Best Sellers</h2>
+                  <Link href="/catalog" className="text-sm font-semibold text-blue-700">See all</Link>
+                </div>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  {bestSellers.map((product) => (
+                    <StoreProductCard key={product.id} product={product} onAddToCart={addToCart} />
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-semibold">New Arrivals</h2>
+                  <Link href="/catalog" className="text-sm font-semibold text-blue-700">See all</Link>
+                </div>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  {newArrivals.map((product) => (
+                    <StoreProductCard key={product.id} product={product} onAddToCart={addToCart} />
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 className="text-2xl font-semibold">Why Shop With Us</h2>
+                <div className="mt-4 grid gap-4 md:grid-cols-3">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 text-teal-700">
+                      <ShieldCheck size={20} />
+                    </div>
+                    <div>
+                      <p className="font-semibold">Secure Checkout</p>
+                      <p className="text-sm text-slate-600">SSL encrypted payments with Flutterwave</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 text-teal-700">
+                      <Truck size={20} />
+                    </div>
+                    <div>
+                      <p className="font-semibold">Fast Delivery</p>
+                      <p className="text-sm text-slate-600">Same-day delivery in Lagos & Abuja</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 text-teal-700">
+                      <PackageCheck size={20} />
+                    </div>
+                    <div>
+                      <p className="font-semibold">Easy Returns</p>
+                      <p className="text-sm text-slate-600">7-day hassle-free return policy</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-semibold">Featured Products</h2>
                   <Link href="/catalog" className="text-sm font-semibold text-blue-700">See all</Link>
                 </div>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
