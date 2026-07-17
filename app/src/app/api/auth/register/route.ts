@@ -1,45 +1,48 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { RegisterSchema } from "@/lib/validate";
+import { signToken } from "@/lib/auth";
+import { rateLimit, getRateLimitIdentifier } from "@/lib/rate-limit";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || "dev-secret";
-const AUTH_COOKIE_NAME = "phantom_token";
-
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as { name?: string; email?: string; password?: string; address?: string };
-  const name = body.name?.trim() || "New user";
-  const email = body.email?.trim().toLowerCase();
-  const password = body.password ?? "";
-
-  if (!email || !password) {
-    return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  const identifier = getRateLimitIdentifier(request);
+  if (!rateLimit(identifier, 3, 60_000)) {
+    return NextResponse.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
   }
+
+  const body = (await request.json().catch(() => ({}))) as unknown;
+  const parsed = RegisterSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.errors[0]?.message || "Invalid input" }, { status: 400 });
+  }
+
+  const { name, email, password, address } = parsed.data;
 
   try {
     await connectToDatabase();
-    const existing = await User.findOne({ email }).exec();
+    const existing = await User.findOne({ email: email.toLowerCase() }).exec();
     if (existing) {
       return NextResponse.json({ error: "Email exists" }, { status: 409 });
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashed, role: "customer", address: body.address });
+    const user = new User({ name, email: email.toLowerCase(), password: hashed, role: "customer", address });
     await user.save();
 
-    const token = jwt.sign({ sub: user._id.toString(), email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
+    const token = signToken({ sub: user._id.toString(), email: user.email, role: user.role });
     const response = NextResponse.json({ ok: true, token, user: { id: user._id.toString(), email: user.email, name: user.name, role: user.role } });
 
-   response.cookies.set({
-     name: AUTH_COOKIE_NAME,
-     value: token,
-     httpOnly: true,
-     secure: process.env.NODE_ENV === "production",
-     sameSite: "lax",
-     path: "/",
-     maxAge: 60 * 60 * 24 * 7,
-});
+    response.cookies.set({
+      name: "phantom_token",
+      value: token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
 
     return response;
   } catch (error) {

@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
+import { EmailSchema } from "@/lib/validate";
 import axios from "axios";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as { to?: string; subject?: string; html?: string };
-  const to = body.to;
-  const subject = body.subject || "Notification from Phantom Gadgets";
-  const html = body.html || "";
+  const body = (await request.json().catch(() => ({}))) as unknown;
+  const parsed = EmailSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.errors[0]?.message || "Invalid input" }, { status: 400 });
+  }
 
-  if (!to) return NextResponse.json({ error: "Missing recipient" }, { status: 400 });
+  const { to, subject, html } = parsed.data;
 
   if (!RESEND_API_KEY) {
-    // Demo mode — log and return success so flows continue locally.
-    // eslint-disable-next-line no-console
     console.log("Resend API key not configured. Email would be:", { to, subject });
     return NextResponse.json({ ok: true, demo: true });
   }

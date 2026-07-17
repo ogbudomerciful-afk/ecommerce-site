@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
+import { UpdateOrderSchema } from "@/lib/validate";
 import connectToDatabase from "@/lib/mongodb";
 import Order from "@/models/Order";
 
 export async function PATCH(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as { orderId?: string; tx_ref?: string; status?: string; paymentStatus?: string };
-  const { orderId, tx_ref, status, paymentStatus } = body;
-  if (!orderId && !tx_ref) return NextResponse.json({ error: "Missing identifier" }, { status: 400 });
+  const body = (await request.json().catch(() => ({}))) as unknown;
+  const parsed = UpdateOrderSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.errors[0]?.message || "Invalid input" }, { status: 400 });
+  }
+
+  const { orderId, tx_ref, status, paymentStatus } = parsed.data;
 
   try {
     await connectToDatabase();
@@ -17,7 +22,6 @@ export async function PATCH(request: Request) {
     if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
     return NextResponse.json({ ok: true, order });
   } catch (err: any) {
-    // eslint-disable-next-line no-console
     console.error("Update order error", err?.message || err);
     return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
   }

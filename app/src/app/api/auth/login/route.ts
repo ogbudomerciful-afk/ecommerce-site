@@ -1,24 +1,28 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { LoginSchema } from "@/lib/validate";
+import { signToken } from "@/lib/auth";
+import { rateLimit, getRateLimitIdentifier } from "@/lib/rate-limit";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || "dev-secret";
-const AUTH_COOKIE_NAME = "phantom_token";
-
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as { email?: string; password?: string };
-  const email = body.email?.trim().toLowerCase();
-  const password = body.password ?? "";
-
-  if (!email || !password) {
-    return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  const identifier = getRateLimitIdentifier(request);
+  if (!rateLimit(identifier, 5, 60_000)) {
+    return NextResponse.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
   }
+
+  const body = (await request.json().catch(() => ({}))) as unknown;
+  const parsed = LoginSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.errors[0]?.message || "Invalid input" }, { status: 400 });
+  }
+
+  const { email, password } = parsed.data;
 
   try {
     await connectToDatabase();
-    const user = await User.findOne({ email }).exec();
+    const user = await User.findOne({ email: email.toLowerCase() }).exec();
 
     if (!user) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
@@ -29,22 +33,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    const token = jwt.sign({ sub: user._id.toString(), email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
+    const token = signToken({ sub: user._id.toString(), email: user.email, role: user.role });
     const response = NextResponse.json({
       ok: true,
       token,
       user: { id: user._id.toString(), email: user.email, name: user.name, role: user.role },
     });
 
-   response.cookies.set({
-     name: AUTH_COOKIE_NAME,
-     value: token,
-     httpOnly: true,
-     secure: process.env.NODE_ENV === "production",
-     sameSite: "lax",
-     path: "/",
-     maxAge: 60 * 60 * 24 * 7,
-   });
+    response.cookies.set({
+      name: "phantom_token",
+      value: token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
 
     return response;
   } catch (error) {

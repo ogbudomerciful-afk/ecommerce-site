@@ -1,19 +1,18 @@
 import { NextResponse } from "next/server";
+import { PaymentLinkSchema } from "@/lib/validate";
 import axios from "axios";
 
 const FLW_SECRET = process.env.FLUTTERWAVE_SECRET_KEY || "";
 const APP_URL = process.env.APP_URL || "http://localhost:3000";
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as { amount?: number; currency?: string; email?: string; tx_ref?: string };
-  const amount = Number(body.amount ?? 0);
-  const currency = body.currency || "NGN";
-  const email = body.email?.trim().toLowerCase();
-  const txRef = body.tx_ref || `phantom_${Date.now()}`;
-
-  if (!amount || !email) {
-    return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  const body = (await request.json().catch(() => ({}))) as unknown;
+  const parsed = PaymentLinkSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.errors[0]?.message || "Invalid input" }, { status: 400 });
   }
+
+  const { amount, currency, email, tx_ref } = parsed.data;
 
   if (!FLW_SECRET) {
     return NextResponse.json({
@@ -29,7 +28,7 @@ export async function POST(request: Request) {
     const resp = await axios.post(
       "https://api.flutterwave.com/v3/payments",
       {
-        tx_ref: txRef,
+        tx_ref,
         amount,
         currency,
         redirect_url: `${APP_URL}/orders`,

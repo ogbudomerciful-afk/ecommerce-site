@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
+import { CreateOrderSchema } from "@/lib/validate";
 import connectToDatabase from "@/lib/mongodb";
 import Order from "@/models/Order";
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as any;
-  const { tx_ref, userEmail, items, total, address } = body;
-  if (!tx_ref || !userEmail || !items || !total) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  const body = (await request.json().catch(() => ({}))) as unknown;
+  const parsed = CreateOrderSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.errors[0]?.message || "Invalid input" }, { status: 400 });
+  }
+
+  const { tx_ref, userEmail, items, total, address } = parsed.data;
 
   try {
     await connectToDatabase();
