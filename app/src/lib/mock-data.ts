@@ -133,7 +133,7 @@ export const starterProducts: Product[] = [
     price: 72000,
     category: "Storage",
     description: "NVMe SSD with read speeds up to 7,000 MB/s.",
-    image: "https://images.unsplash.com/photo-1597872200967-794f1f40d09f?auto=format&fit=crop&w=900&q=80",
+    image: "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&w=900&q=80",
     inventory: 30,
   },
   {
@@ -178,7 +178,7 @@ export const starterProducts: Product[] = [
     price: 210000,
     category: "Photography",
     description: "Foldable drone with 4K HDR and 30-min flight time.",
-    image: "https://images.unsplash.com/photo-1507582020474-9a35b7d455d2?auto=format&fit=crop&w=900&q=80",
+    image: "https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=900&q=80",
     inventory: 4,
     badge: "Limited",
   },
@@ -188,7 +188,7 @@ export const starterProducts: Product[] = [
     price: 28000,
     category: "Wearables",
     description: "Slim band with SpO2 and sleep tracking.",
-    image: "https://images.unsplash.com/photo-1557426282-f45e8d5a9f3f?auto=format&fit=crop&w=900&q=80",
+    image: "https://images.unsplash.com/photo-1576675466969-38eeae4b41f6?auto=format&fit=crop&w=900&q=80",
     inventory: 35,
   },
   {
@@ -206,7 +206,7 @@ export const starterProducts: Product[] = [
     price: 145000,
     category: "Computing",
     description: "11-inch Android tablet with 128GB storage.",
-    image: "https://images.unsplash.com/photo-1585790040460-4001fda84c3e?auto=format&fit=crop&w=900&q=80",
+    image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=900&q=80",
     inventory: 8,
   },
   {
@@ -306,7 +306,7 @@ export const starterProducts: Product[] = [
     price: 21000,
     category: "Lifestyle",
     description: "LED desk lamp with wireless charger base.",
-    image: "https://images.unsplash.com/photo-1507473885765-e6ed057ab6fe?auto=format&fit=crop&w=900&q=80",
+    image: "https://images.unsplash.com/photo-1513506003011-3b03c8013e6f?auto=format&fit=crop&w=900&q=80",
     inventory: 21,
   },
   {
