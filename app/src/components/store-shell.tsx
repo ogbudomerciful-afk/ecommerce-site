@@ -442,13 +442,13 @@ export default function StoreShell({ view }: { view: StoreView }) {
               <div className="rounded-3xl border border-slate-200 bg-black p-8 text-white shadow-2xl shadow-teal-100/60">
                 <div className="flex items-center gap-2 text-sm uppercase tracking-[0.3em] text-teal-300">
                   <Sparkles size={16} />
-                  MVP launch ready
+                  Technology That Fits Your Lifestyle.
                 </div>
                 <h1 className="mt-4 max-w-2xl text-4xl font-semibold sm:text-5xl">
-                  A polished ecommerce MVP with cart, payments, admin tools, and delivery tracking.
+                  Shop the latest smartphones, wearables, audio devices, and accessories
                 </h1>
                 <p className="mt-4 max-w-2xl text-lg text-slate-300">
-                  Phantom Gadgets combines stylish storefront design with practical operations for launches and small teams.
+                  —all carefully selected for quality, value, and performance.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
                   <Link href="/catalog" className="rounded-full bg-teal-400 px-5 py-3 font-semibold text-black">
