@@ -2,11 +2,11 @@
 
 import type { User } from "@/lib/mock-data";
 
-type AuthMode = "login" | "signup";
+type AuthMode = "login" | "signup" | "forgot-password" | "reset-password";
 
 type StoreAuthProps = {
   mode: AuthMode;
-  form: { name: string; email: string; password: string; address: string };
+  form: { name: string; email: string; password: string; address: string; token: string };
   onModeChange: (mode: AuthMode) => void;
   onFormChange: (field: string, value: string) => void;
   onSubmit: (event: React.FormEvent) => void;
@@ -32,6 +32,9 @@ export default function StoreAuth({ mode, form, onModeChange, onFormChange, onSu
         {mode === "signup" ? (
           <input value={form.name} onChange={(event) => onFormChange("name", event.target.value)} className="w-full rounded-full border border-slate-300 px-4 py-3" placeholder="Your name" />
         ) : null}
+        {mode === "reset-password" ? (
+          <input value={form.token} onChange={(event) => onFormChange("token", event.target.value)} className="w-full rounded-full border border-slate-300 px-4 py-3" placeholder="Reset token" />
+        ) : null}
         <input type="email" value={form.email} onChange={(event) => onFormChange("email", event.target.value)} className="w-full rounded-full border border-slate-300 px-4 py-3" placeholder="Email address" />
         <input type="password" value={form.password} onChange={(event) => onFormChange("password", event.target.value)} className="w-full rounded-full border border-slate-300 px-4 py-3" placeholder="Password" />
         {mode === "signup" ? (
@@ -43,7 +46,7 @@ export default function StoreAuth({ mode, form, onModeChange, onFormChange, onSu
           </button>
         ) : null}
         <button type="submit" className="w-full rounded-full bg-blue-600 px-5 py-3 font-semibold text-white">
-          {mode === "login" ? "Login" : "Create account"}
+          {mode === "login" ? "Login" : mode === "signup" ? "Create account" : mode === "forgot-password" ? "Send reset link" : "Reset password"}
         </button>
       </form>
       {statusMessage ? (
