@@ -75,6 +75,7 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
   const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | "name">("price-asc");
   const [adminTab, setAdminTab] = useState<"overview" | "products" | "orders" | "customers">("overview");
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
+  const [authLoading, setAuthLoading] = useState(true);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const { showToast } = useToast();
 
@@ -97,6 +98,8 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
         }
       } catch {
         // Ignore session restoration failures in demo mode.
+      } finally {
+        setAuthLoading(false);
       }
     };
     void restoreSession();
@@ -813,9 +816,17 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
           ) : null}
 
           {view === "profile" ? (
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">My Account</h2>
-              {currentUser ? (
+            <div>
+              {authLoading ? (
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <h2 className="text-2xl font-semibold">My Account</h2>
+                  <div className="mt-6 space-y-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                </div>
+              ) : currentUser ? (
                 <StoreCustomerDashboard
                   currentUser={currentUser}
                   products={products}
@@ -823,14 +834,17 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
                   onAddToCart={addToCart}
                 />
               ) : (
-                <StoreAuth
-                  mode={authMode}
-                  form={authForm}
-                  onModeChange={(mode) => setAuthMode(mode)}
-                  onFormChange={handleAuthFormChange}
-                  onSubmit={handleAuth}
-                  onForgotPassword={() => setAuthMode("forgot-password")}
-                />
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <h2 className="text-2xl font-semibold">My Account</h2>
+                  <StoreAuth
+                    mode={authMode}
+                    form={authForm}
+                    onModeChange={(mode) => setAuthMode(mode)}
+                    onFormChange={handleAuthFormChange}
+                    onSubmit={handleAuth}
+                    onForgotPassword={() => setAuthMode("forgot-password")}
+                  />
+                </div>
               )}
             </div>
           ) : null}
