@@ -664,6 +664,7 @@ export default function StoreShell({ view, productId }: { view: StoreView; produ
                   onCategoryChange={setSelectedCategory}
                   sortBy={sortBy}
                   onSortChange={setSortBy}
+                  currentUserEmail={currentUser?.email}
                 />
               );
             })()

@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, ShoppingBag, Truck, ShieldCheck, Star, Search } from "lucide-react";
 import type { Product } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/mock-data";
+import ProductReviews from "@/components/store-product-reviews";
 
 type StoreProductPageProps = {
   product: Product;
@@ -19,6 +20,7 @@ type StoreProductPageProps = {
   onCategoryChange: (category: string) => void;
   sortBy: "price-asc" | "price-desc" | "name";
   onSortChange: (sort: "price-asc" | "price-desc" | "name") => void;
+  currentUserEmail?: string;
 };
 
 export default function StoreProductPage({
@@ -32,6 +34,7 @@ export default function StoreProductPage({
   onCategoryChange,
   sortBy,
   onSortChange,
+  currentUserEmail,
 }: StoreProductPageProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const searchParams = useSearchParams();
@@ -200,6 +203,8 @@ export default function StoreProductPage({
           ))}
         </div>
       </div>
+
+      <ProductReviews productId={product.id} currentUserEmail={currentUserEmail} />
     </div>
   );
 }
