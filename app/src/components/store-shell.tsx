@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, LayoutGrid, PackageCheck, ShieldCheck, ShoppingBag, Sparkles, Truck, UserRound } from "lucide-react";
 import Link from "next/link";
 import {
