@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LayoutGrid, ShoppingBag, PackageCheck, ShieldCheck, UserRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 type NavItem = {
@@ -30,26 +30,26 @@ export default function StoreHeader({ cartCount, currentUser, onLogout, navItems
             <Image src="/logo.png" alt="Phantom Gadgets" width={44} height={44} className="h-full w-full object-cover" priority />
           </div>
           <div>
-            <p className="text-xl font-semibold">Phantom Gadgets</p>
-            <p className="text-sm text-teal-200">Fast checkout, smart ops</p>
+            <p className="text-xl font-semibold bg-gradient-to-r from-slate-300 to-white bg-clip-text text-transparent">Phantom Gadgets</p>
+            <p className="text-sm bg-gradient-to-r from-slate-400 to-white bg-clip-text text-transparent">Fast checkout, smart ops</p>
           </div>
         </Link>
-        <button className="md:hidden text-white" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
-          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+        <button className="md:hidden text-slate-300 hover:text-white transition-colors" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
+          {mobileOpen ? <X size={24} strokeWidth={2.5} /> : <Menu size={24} strokeWidth={2.5} />}
         </button>
         <nav className={`${mobileOpen ? "flex" : "hidden"} absolute left-0 right-0 top-full flex-col gap-4 border-b border-teal-100 bg-black p-4 md:static md:flex md:flex-row md:gap-6 md:border-0 md:p-0`}>
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
-              <Link key={item.href} href={item.href} className="flex items-center gap-2 text-sm text-slate-200 transition hover:text-teal-300" onClick={() => setMobileOpen(false)}>
-                <Icon size={16} />
+              <Link key={item.href} href={item.href} className="flex items-center gap-2 text-sm bg-gradient-to-r from-slate-300 to-white bg-clip-text text-transparent transition hover:from-white hover:to-slate-200" onClick={() => setMobileOpen(false)}>
+                <Icon size={16} strokeWidth={2.5} />
                 {item.label}
               </Link>
             );
           })}
         </nav>
         <div className="hidden items-center gap-3 md:flex">
-          <div className="rounded-full border border-teal-400/40 bg-teal-500/10 px-3 py-1 text-sm text-teal-100">
+          <div className="rounded-full border border-teal-400/40 bg-teal-500/10 px-3 py-1 text-sm bg-gradient-to-r from-slate-300 to-white bg-clip-text text-transparent">
             Cart {cartCount}
           </div>
           {currentUser ? (
@@ -65,7 +65,7 @@ export default function StoreHeader({ cartCount, currentUser, onLogout, navItems
       </div>
       {mobileOpen && (
         <div className="flex flex-col gap-4 border-t border-teal-100 bg-black p-4 md:hidden">
-          <div className="rounded-full border border-teal-400/40 bg-teal-500/10 px-3 py-1 text-sm text-teal-100">
+          <div className="rounded-full border border-teal-400/40 bg-teal-500/10 px-3 py-1 text-sm bg-gradient-to-r from-slate-300 to-white bg-clip-text text-transparent">
             Cart {cartCount}
           </div>
           {currentUser ? (
