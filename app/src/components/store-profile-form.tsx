@@ -8,10 +8,9 @@ type StoreProfileFormProps = {
   form: { name: string; address: string; phone: string };
   onFormChange: (field: string, value: string) => void;
   onSubmit: (event: React.FormEvent) => void;
-  statusMessage: string;
 };
 
-export default function StoreProfileForm({ currentUser, form, onFormChange, onSubmit, statusMessage }: StoreProfileFormProps) {
+export default function StoreProfileForm({ currentUser, form, onFormChange, onSubmit }: StoreProfileFormProps) {
   if (!currentUser) {
     return null;
   }

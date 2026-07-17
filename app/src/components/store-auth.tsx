@@ -10,11 +10,10 @@ type StoreAuthProps = {
   onModeChange: (mode: AuthMode) => void;
   onFormChange: (field: string, value: string) => void;
   onSubmit: (event: React.FormEvent) => void;
-  statusMessage: string;
   onForgotPassword?: () => void;
 };
 
-export default function StoreAuth({ mode, form, onModeChange, onFormChange, onSubmit, statusMessage, onForgotPassword }: StoreAuthProps) {
+export default function StoreAuth({ mode, form, onModeChange, onFormChange, onSubmit, onForgotPassword }: StoreAuthProps) {
   return (
     <div className="mt-6 space-y-4">
       <div className="rounded-2xl border border-slate-200 p-4 text-sm text-slate-600">
@@ -49,11 +48,6 @@ export default function StoreAuth({ mode, form, onModeChange, onFormChange, onSu
           {mode === "login" ? "Login" : mode === "signup" ? "Create account" : mode === "forgot-password" ? "Send reset link" : "Reset password"}
         </button>
       </form>
-      {statusMessage ? (
-        <div className="rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900">
-          {statusMessage}
-        </div>
-      ) : null}
     </div>
   );
 }

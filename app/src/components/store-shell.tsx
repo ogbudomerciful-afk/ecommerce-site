@@ -22,7 +22,6 @@ import StoreOrderCard from "@/components/store-order-card";
 import StoreAdminStats from "@/components/store-admin-stats";
 import StoreInventoryForm from "@/components/store-inventory-form";
 import StoreOrderManager from "@/components/store-order-manager";
-import StoreProfileForm from "@/components/store-profile-form";
 import StoreSidebar from "@/components/store-sidebar";
 import Skeleton from "@/components/store-skeleton";
 import StoreProductPage from "@/components/store-product-page";
@@ -30,6 +29,7 @@ import StoreCustomerDashboard from "@/components/store-customer-dashboard";
 import StoreAdminProducts from "@/components/store-admin-products";
 import StoreAdminCustomers from "@/components/store-admin-customers";
 import StoreAdminAnalytics from "@/components/store-admin-analytics";
+import { useToast } from "@/components/store-toast";
 
 type StoreView = "home" | "catalog" | "cart" | "checkout" | "orders" | "admin" | "profile" | "product" | "business";
 type AuthMode = "login" | "signup" | "forgot-password" | "reset-password";
@@ -69,13 +69,13 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
   const [authForm, setAuthForm] = useState({ name: "", email: "", password: "", address: "", token: "" });
   const [profileForm, setProfileForm] = useState({ name: "", address: "", phone: "" });
   const [inventoryForm, setInventoryForm] = useState({ name: "", price: "", category: "Gadgets", inventory: "", description: "" });
-  const [statusMessage, setStatusMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | "name">("price-asc");
   const [adminTab, setAdminTab] = useState<"overview" | "products" | "orders" | "customers">("overview");
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     setUsers(readStorage(STORAGE_KEYS.users, starterUsers));
@@ -196,12 +196,12 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
           body: JSON.stringify({ email: authForm.email }),
         });
         const payload = await resp.json();
-        setStatusMessage(payload.ok ? "Reset link sent to your email." : payload.error || "Failed to send reset link.");
+        showToast(payload.ok ? "Reset link sent to your email." : payload.error || "Failed to send reset link.", payload.ok ? "success" : "error");
         if (payload.ok) {
           setAuthMode("reset-password");
         }
       } catch {
-        setStatusMessage("Service unavailable.");
+        showToast("Service unavailable.", "error");
       }
       return;
     }
@@ -214,13 +214,13 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
           body: JSON.stringify({ token: authForm.token, password: authForm.password }),
         });
         const payload = await resp.json();
-        setStatusMessage(payload.ok ? "Password reset successful. Please login." : payload.error || "Failed to reset password.");
+        showToast(payload.ok ? "Password reset successful. Please login." : payload.error || "Failed to reset password.", payload.ok ? "success" : "error");
         if (payload.ok) {
           setAuthMode("login");
           setAuthForm({ name: "", email: "", password: "", address: "", token: "" });
         }
       } catch {
-        setStatusMessage("Service unavailable.");
+        showToast("Service unavailable.", "error");
       }
       return;
     }
@@ -229,7 +229,7 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
     const password = authForm.password;
 
     if (!email || !password) {
-      setStatusMessage("Please add an email and password.");
+      showToast("Please add an email and password.", "error");
       return;
     }
 
@@ -247,7 +247,7 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
       const payload = await response.json();
 
       if (!response.ok) {
-        setStatusMessage(payload.error || "Authentication failed.");
+        showToast(payload.error || "Authentication failed.", "error");
         return;
       }
 
@@ -262,10 +262,10 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
 
       setCurrentUser(nextUser);
       setUsers((existingUsers) => (existingUsers.some((entry) => entry.email.toLowerCase() === email) ? existingUsers : [nextUser, ...existingUsers]));
-      setStatusMessage(authMode === "signup" ? "Account created. Welcome to Phantom Gadgets." : `Welcome back, ${nextUser.name}.`);
+      showToast(authMode === "signup" ? "Account created. Welcome to Phantom Gadgets." : `Welcome back, ${nextUser.name}.`);
       setAuthForm({ name: "", email: "", password: "", address: "", token: "" });
     } catch {
-      setStatusMessage("Authentication failed. Please try again.");
+      showToast("Authentication failed. Please try again.", "error");
     }
   };
 
@@ -276,7 +276,7 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
       // Ignore logout errors in demo mode.
     }
     setCurrentUser(null);
-    setStatusMessage("Signed out.");
+    showToast("Signed out.");
   };
 
   const addToCart = (productId: string) => {
@@ -286,7 +286,7 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
     } else {
       setCart([...cart, { productId, quantity: 1 }]);
     }
-    setStatusMessage("Added to cart.");
+    showToast("Added to cart.");
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
@@ -300,11 +300,11 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
   const handleCheckout = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!currentUser) {
-      setStatusMessage("Please sign in before checking out.");
+      showToast("Please sign in before checking out.", "error");
       return;
     }
     if (!cart.length) {
-      setStatusMessage("Your cart is empty.");
+      showToast("Your cart is empty.");
       return;
     }
     try {
@@ -328,7 +328,7 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
       });
       const createJson = await createResp.json();
       if (!createResp.ok) {
-        setStatusMessage(createJson.error || "Failed to create order.");
+        showToast(createJson.error || "Failed to create order.", "error");
         return;
       }
 
@@ -367,10 +367,10 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
         // ignore email errors
       }
 
-      setStatusMessage(payload?.data?.link ? `Order placed. Payment link ready: ${payload.data.link}` : "Order placed successfully. Awaiting payment confirmation.");
+      showToast(payload?.data?.link ? `Order placed. Payment link ready: ${payload.data.link}` : "Order placed successfully. Awaiting payment confirmation.");
     } catch (err) {
       console.error("Checkout error", err);
-      setStatusMessage("Checkout failed. Please try again.");
+      showToast("Checkout failed. Please try again.", "error");
     }
   };
 
@@ -385,7 +385,7 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
     };
     setUsers(users.map((entry) => (entry.id === currentUser.id ? updatedUser : entry)));
     setCurrentUser(updatedUser);
-    setStatusMessage("Profile updated.");
+    showToast("Profile updated.");
   };
 
   const handleInventorySubmit = async (event: React.FormEvent) => {
@@ -425,7 +425,7 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
       badge: "New",
     };
     setProducts([newProduct, ...products]);
-    setStatusMessage("Product added to inventory.");
+    showToast("Product added to inventory.");
     setInventoryForm({ name: "", price: "", category: "Gadgets", inventory: "", description: "" });
     if (fileRef.current) fileRef.current.value = "";
   };
@@ -466,11 +466,6 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
 
       <main className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:flex-row lg:px-8">
         <section className="w-full lg:w-2/3">
-          {statusMessage ? (
-            <div className="mb-6 rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900">
-              {statusMessage}
-            </div>
-          ) : null}
 
           {view === "home" ? (
             <>
@@ -792,15 +787,15 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
                   onAddProduct={(productData) => {
                     const newProduct = { ...productData, id: createId("product") };
                     setProducts([newProduct, ...products]);
-                    setStatusMessage("Product added successfully");
+                    showToast("Product added successfully");
                   }}
                   onUpdateProduct={(updatedProduct) => {
                     setProducts(products.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)));
-                    setStatusMessage("Product updated successfully");
+                    showToast("Product updated successfully");
                   }}
                   onDeleteProduct={(productId) => {
                     setProducts(products.filter((p) => p.id !== productId));
-                    setStatusMessage("Product deleted successfully");
+                    showToast("Product deleted successfully");
                   }}
                 />
               )}
@@ -830,10 +825,9 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
                 <StoreAuth
                   mode={authMode}
                   form={authForm}
-                  onModeChange={(mode) => { setAuthMode(mode); setStatusMessage(""); }}
+                  onModeChange={(mode) => setAuthMode(mode)}
                   onFormChange={handleAuthFormChange}
                   onSubmit={handleAuth}
-                  statusMessage={statusMessage}
                   onForgotPassword={() => setAuthMode("forgot-password")}
                 />
               )}
