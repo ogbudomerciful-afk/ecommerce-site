@@ -24,6 +24,7 @@ import StoreInventoryForm from "@/components/store-inventory-form";
 import StoreOrderManager from "@/components/store-order-manager";
 import StoreProfileForm from "@/components/store-profile-form";
 import StoreSidebar from "@/components/store-sidebar";
+import Skeleton from "@/components/store-skeleton";
 
 type StoreView = "home" | "catalog" | "cart" | "checkout" | "orders" | "admin" | "profile";
 type AuthMode = "login" | "signup" | "forgot-password" | "reset-password";
@@ -57,6 +58,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orders, setOrders] = useState<Order[]>(starterOrders);
+  const [loading, setLoading] = useState(true);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [authForm, setAuthForm] = useState({ name: "", email: "", password: "", address: "", token: "" });
   const [profileForm, setProfileForm] = useState({ name: "", address: "", phone: "" });
@@ -90,6 +92,7 @@ export default function StoreShell({ view }: { view: StoreView }) {
   useEffect(() => {
     const loadOrders = async () => {
       try {
+        setLoading(true);
         const url = currentUser?.role === "admin" ? "/api/orders/list" : `/api/orders/list?email=${encodeURIComponent(currentUser?.email || "")}`;
         const resp = await fetch(url);
         if (!resp.ok) return;
@@ -110,6 +113,8 @@ export default function StoreShell({ view }: { view: StoreView }) {
         }
       } catch {
         // ignore load errors
+      } finally {
+        setLoading(false);
       }
     };
     void loadOrders();
@@ -485,11 +490,20 @@ export default function StoreShell({ view }: { view: StoreView }) {
           ) : null}
 
           {view === "catalog" ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              {products.map((product) => (
-                <StoreProductCard key={product.id} product={product} onAddToCart={addToCart} />
-              ))}
-            </div>
+            loading ? (
+              <div className="grid gap-4 md:grid-cols-2">
+                <Skeleton className="h-64" />
+                <Skeleton className="h-64" />
+                <Skeleton className="h-64" />
+                <Skeleton className="h-64" />
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {products.map((product) => (
+                  <StoreProductCard key={product.id} product={product} onAddToCart={addToCart} />
+                ))}
+              </div>
+            )
           ) : null}
 
           {view === "cart" ? (
@@ -506,9 +520,9 @@ export default function StoreShell({ view }: { view: StoreView }) {
                       <span>Total</span>
                       <span>{formatCurrency(cartTotal)}</span>
                     </div>
-                    <a href="/checkout" className="mt-4 inline-flex items-center rounded-full bg-teal-500 px-5 py-3 font-semibold text-black">
+                    <Link href="/checkout" className="mt-4 inline-flex items-center rounded-full bg-teal-500 px-5 py-3 font-semibold text-black">
                       Proceed to checkout <ArrowRight className="ml-2" size={16} />
-                    </a>
+                    </Link>
                   </div>
                 </div>
               ) : (
@@ -538,15 +552,22 @@ export default function StoreShell({ view }: { view: StoreView }) {
           ) : null}
 
           {view === "orders" ? (
-            <div className="space-y-4">
-              {customerOrders.length ? (
-                customerOrders.map((order) => <StoreOrderCard key={order.id} order={order} />)
-              ) : (
-                <div className="rounded-3xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm">
-                  No orders yet. Complete checkout to see tracking updates here.
-                </div>
-              )}
-            </div>
+            loading ? (
+              <div className="space-y-4">
+                <Skeleton className="h-32" />
+                <Skeleton className="h-32" />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {customerOrders.length ? (
+                  customerOrders.map((order) => <StoreOrderCard key={order.id} order={order} />)
+                ) : (
+                  <div className="rounded-3xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm">
+                    No orders yet. Complete checkout to see tracking updates here.
+                  </div>
+                )}
+              </div>
+            )
           ) : null}
 
           {view === "admin" ? (
