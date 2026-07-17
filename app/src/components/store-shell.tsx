@@ -31,7 +31,7 @@ import StoreAdminProducts from "@/components/store-admin-products";
 import StoreAdminCustomers from "@/components/store-admin-customers";
 import StoreAdminAnalytics from "@/components/store-admin-analytics";
 
-type StoreView = "home" | "catalog" | "cart" | "checkout" | "orders" | "admin" | "profile" | "product";
+type StoreView = "home" | "catalog" | "cart" | "checkout" | "orders" | "admin" | "profile" | "product" | "business";
 type AuthMode = "login" | "signup" | "forgot-password" | "reset-password";
 
 const STORAGE_KEYS = {
@@ -58,7 +58,7 @@ function writeStorage<T>(key: string, value: T) {
   window.localStorage.setItem(key, JSON.stringify(value));
 }
 
-export default function StoreShell({ view, productId }: { view: StoreView; productId?: string }) {
+export default function StoreShell({ view, productId, children }: { view: StoreView; productId?: string; children?: React.ReactNode }) {
   const [users, setUsers] = useState<User[]>(starterUsers);
   const [products, setProducts] = useState<Product[]>(starterProducts);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -682,6 +682,14 @@ export default function StoreShell({ view, productId }: { view: StoreView; produ
                 />
               );
             })()
+          ) : null}
+
+          {view === "business" && children ? (
+            <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+              <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+                {children}
+              </div>
+            </div>
           ) : null}
 
           {view === "cart" ? (
