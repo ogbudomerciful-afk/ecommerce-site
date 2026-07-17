@@ -40,6 +40,7 @@ const STORAGE_KEYS = {
   cart: "phantom-cart",
   orders: "phantom-orders",
   products: "phantom-products",
+  recentlyViewed: "phantom-recently-viewed",
 };
 
 function readStorage<T>(key: string, fallback: T): T {
@@ -73,6 +74,7 @@ export default function StoreShell({ view, productId }: { view: StoreView; produ
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | "name">("price-asc");
   const [adminTab, setAdminTab] = useState<"overview" | "products" | "orders" | "customers">("overview");
+  const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -81,6 +83,7 @@ export default function StoreShell({ view, productId }: { view: StoreView; produ
     setCart(readStorage(STORAGE_KEYS.cart, [] as CartItem[]));
     setOrders(readStorage(STORAGE_KEYS.orders, starterOrders));
     setCurrentUser(readStorage<User | null>(STORAGE_KEYS.currentUser, null));
+    setRecentlyViewed(readStorage<Product[]>(STORAGE_KEYS.recentlyViewed, []));
   }, []);
 
   useEffect(() => {
@@ -135,7 +138,8 @@ export default function StoreShell({ view, productId }: { view: StoreView; produ
     writeStorage(STORAGE_KEYS.cart, cart);
     writeStorage(STORAGE_KEYS.orders, orders);
     writeStorage(STORAGE_KEYS.currentUser, currentUser);
-  }, [users, products, cart, orders, currentUser]);
+    writeStorage(STORAGE_KEYS.recentlyViewed, recentlyViewed);
+  }, [users, products, cart, orders, currentUser, recentlyViewed]);
 
   useEffect(() => {
     if (currentUser) {
@@ -174,6 +178,13 @@ export default function StoreShell({ view, productId }: { view: StoreView; produ
   const newArrivals = useMemo(() => {
     return [...products].sort(() => Math.random() - 0.5).slice(0, 4);
   }, [products]);
+
+  const addToRecentlyViewed = (product: Product) => {
+    setRecentlyViewed((prev) => {
+      const filtered = prev.filter((p) => p.id !== product.id);
+      return [product, ...filtered].slice(0, 8);
+    });
+  };
 
   const handleAuth = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -652,6 +663,9 @@ export default function StoreShell({ view, productId }: { view: StoreView; produ
                   </div>
                 );
               }
+              if (productId) {
+                addToRecentlyViewed(product);
+              }
               return (
                 <StoreProductPage
                   product={product}
@@ -814,7 +828,7 @@ export default function StoreShell({ view, productId }: { view: StoreView; produ
           ) : null}
         </section>
 
-        <StoreSidebar adminView={adminView} />
+        <StoreSidebar adminView={adminView} recentlyViewed={recentlyViewed} />
       </main>
     </div>
   );
