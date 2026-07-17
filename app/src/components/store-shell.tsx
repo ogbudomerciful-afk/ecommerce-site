@@ -15,6 +15,7 @@ import {
   type User,
 } from "@/lib/mock-data";
 import StoreHeader from "@/components/store-header";
+import StoreFooter from "@/components/store-footer";
 import StoreAuth from "@/components/store-auth";
 import StoreProductCard from "@/components/store-product-card";
 import StoreCartItem from "@/components/store-cart-item";
@@ -837,6 +838,7 @@ export default function StoreShell({ view, productId, children }: { view: StoreV
 
         <StoreSidebar adminView={adminView} recentlyViewed={recentlyViewed} />
       </main>
+      <StoreFooter />
     </div>
   );
 }
