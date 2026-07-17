@@ -7,6 +7,10 @@ export type IUser = {
   role: "customer" | "admin";
   address?: string;
   phone?: string;
+  emailVerified?: boolean;
+  verificationToken?: string;
+  resetToken?: string;
+  resetTokenExpiry?: Date;
 };
 
 const UserSchema = new mongoose.Schema<IUser>({
@@ -16,6 +20,10 @@ const UserSchema = new mongoose.Schema<IUser>({
   role: { type: String, required: true, default: "customer" },
   address: String,
   phone: String,
+  emailVerified: { type: Boolean, default: false },
+  verificationToken: String,
+  resetToken: String,
+  resetTokenExpiry: Date,
 });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);
